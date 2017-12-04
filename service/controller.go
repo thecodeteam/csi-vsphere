@@ -206,5 +206,8 @@ func (s *service) ControllerProbe(
 	req *csi.ControllerProbeRequest) (
 	*csi.ControllerProbeResponse, error) {
 
+	if _, err := s.ops.List(); err != nil {
+		return nil, err
+	}
 	return &csi.ControllerProbeResponse{}, nil
 }
