@@ -1,16 +1,60 @@
 # CSI-vSphere
-A Container Storage Interface (CSI) Storage Plug-in (SP) for VMware vSphere.
+CSI-vSphere is a Container Storage Interface
+([CSI](https://github.com/container-storage-interface/spec)) plug-in
+that that provides VMDK support to VMware vSphere virtual machines.
 
-```shell
-$ CSI_ENDPOINT=csi.sock \
-  X_CSI_LOG_LEVEL=info \
-  ./csi-vsphere
-INFO[0000] serving                                       endpoint="unix://csi.sock"
+## Installation
+CSI-vSphere may be installed with the following command:
+
+```bash
+$ go get github.com/thecodeteam/csi-vsphere
+```
+
+The resulting binary will be located at `$GOPATH/bin/csi-vsphere`.
+
+## Starting the Plug-in
+Before starting the plug-in please set the environment variable
+`CSI_ENDPOINT` to a valid Go network address such as `csi.sock`:
+
+```bash
+$ CSI_ENDPOINT=csi.sock csi-vsphere
+INFO[0000] serving                                       address="unix://csi.sock"
+```
+
+The server can be shutdown by using `Ctrl-C` or sending the process
+any of the standard exit signals.
+
+## Using the Plug-in
+The CSI specification uses the gRPC protocol for plug-in communication.
+The easiest way to interact with a CSI plug-in is via the Container
+Storage Client (`csc`) program provided via the
+[GoCSI](https://github.com/thecodeteam/gocsi) project:
+
+```bash
+$ go get github.com/thecodeteam/gocsi/csc
 ```
 
 ## Configuration
-This CSI plug-in was created using the GoCSI
-[`csp`](https://github.com/thecodeteam/gocsi/tree/master/csp) package.
-Please see its [configuration section](https://github.com/thecodeteam/gocsi/tree/master/csp/README.md#configuration)
-for a complete list of the environment variables that may be used to configure
-this SP.
+The CSI-vShere SP is configured via environment variables:
+
+| Name | Default | Description |
+|------|---------|-------------|
+| `X_CSI_VSPHERE_PORT` | `1019` | The port used to connect to the ESX service |
+| `X_CSI_VSPHERE_DATASTORE` | | The datastore from which VMDKs are listed and the default datastore in/from which VMDKs are created/removed. |
+
+This SP is built using the GoCSI CSP package and as such may be configured with
+any of its
+[configuration properties](https://github.com/thecodeteam/gocsi/tree/master/csp#configuration).
+The following table is a list of the global configuration properties for
+which CSI-vSphere provides a default value:
+
+| Name | Value | Description |
+|------|---------|-----------|
+| `X_CSI_IDEMP` | `true` | Enables idempotency |
+| `X_CSI_IDEMP_REQUIRE_VOL` | `true` | Instructs the idempotency interceptor to validate the existence of a volume before allowing an operation to proceed |
+| `X_CSI_CREATE_VOL_ALREADY_EXISTS` | `true` | Indicates that a `CreateVolume` request with a result of `AlreadyExists` will be changed to success |
+| `X_CSI_DELETE_VOL_NOT_FOUND` | `true` | Indicates that a `DeleteVolume` request with a result of `NotFound` will be changed to success |
+| `X_CSI_SUPPORTED_VERSIONS` | `0.0.0, 0.1.0` | A list of the CSI versions this SP supports |
+
+In addition to the global configuration properties, the CSI-vSphere storage
+plug-in also defines a few of its own:
