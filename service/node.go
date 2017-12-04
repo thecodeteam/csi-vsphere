@@ -35,6 +35,9 @@ func (s *service) NodeProbe(
 	req *csi.NodeProbeRequest) (
 	*csi.NodeProbeResponse, error) {
 
+	if _, err := s.ops.List(); err != nil {
+		return nil, err
+	}
 	return &csi.NodeProbeResponse{}, nil
 }
 

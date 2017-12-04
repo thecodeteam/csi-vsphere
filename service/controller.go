@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"path/filepath"
 
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+
 	"github.com/container-storage-interface/spec/lib/go/csi"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
@@ -163,17 +166,7 @@ func (s *service) GetCapacity(
 	req *csi.GetCapacityRequest) (
 	*csi.GetCapacityResponse, error) {
 
-	vols, err := s.listVolumes(ctx)
-	if err != nil {
-		return nil, err
-	}
-	var capacity uint64
-	for _, v := range vols {
-		if st, ok := v.Attributes["status"]; !ok || st != "attached" {
-			capacity = capacity + v.CapacityBytes
-		}
-	}
-	return &csi.GetCapacityResponse{AvailableCapacity: capacity}, nil
+	return nil, status.Error(codes.Unimplemented, "")
 }
 
 func (s *service) ControllerGetCapabilities(
@@ -213,5 +206,8 @@ func (s *service) ControllerProbe(
 	req *csi.ControllerProbeRequest) (
 	*csi.ControllerProbeResponse, error) {
 
+	if _, err := s.ops.List(); err != nil {
+		return nil, err
+	}
 	return &csi.ControllerProbeResponse{}, nil
 }
