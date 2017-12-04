@@ -37,6 +37,10 @@ func New() csp.StoragePluginProvider {
 			// well.
 			csp.EnvVarIdemp + "=true",
 
+			// Tell the idempotency interceptor to validate whether or
+			// not a volume exists before proceeding with the operation
+			csp.EnvVarIdempRequireVolume + "=true",
+
 			// Provide the list of versions supported by this SP. The
 			// specified versions will be:
 			//     * Returned by GetSupportedVersions
