@@ -26,10 +26,10 @@
   revision = "95cd2b9c79aa5e72ab0bc69b7ccc2be15bf850f6"
 
 [[projects]]
-  branch = "master"
   name = "github.com/thecodeteam/gocsi"
   packages = [".","csp"]
-  revision = "b7cc8c8a8776b05dd4ba92e351aa3bc769bb7b15"
+  revision = "c3bfc4752861d5e369fbab19049779c8f4185076"
+  version = "v0.2.4"
 
 [[projects]]
   name = "github.com/thecodeteam/gofsutil"
