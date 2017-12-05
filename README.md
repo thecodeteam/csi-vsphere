@@ -76,8 +76,8 @@ which CSI-vSphere provides a default value:
 | `X_CSI_SUPPORTED_VERSIONS` | `0.0.0, 0.1.0` | A list of the CSI versions this SP supports |
 
 ## Access Modes
-The CSI specification defines several access modes for volumes. The CSI-vSphere SP
-supports the following access modes:
+The CSI-vSphere SP supports the following CSI volume
+[access modes](https://github.com/container-storage-interface/spec/blob/master/spec.md#createvolume):
 
 | Access Mode | Description |
 |-------------|-------------|
