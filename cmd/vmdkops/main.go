@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
 	"strings"
@@ -10,19 +11,38 @@ import (
 )
 
 func main() {
-	if len(os.Args) < 2 {
+
+	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr,
-			"usage: %s CMD [VMDK] [KEY=VAL [KEY=VAL]...]\n", os.Args[0])
+			"usage: %s [CMD] [VMDK] [KEY=VAL [KEY=VAL]...]", os.Args[0])
 		os.Exit(1)
 	}
+	port := flag.Int(
+		"port", 1019, "The port used to connect to the ESXi service.")
+	flag.Parse()
+
+	if port == nil {
+		vmdkops.EsxPort = 1019
+	} else {
+		vmdkops.EsxPort = *port
+	}
+
 	var (
-		cmdName = os.Args[1]
+		cmdName string
 		dskName string
 		opts    map[string]string
 	)
+
+	if len(os.Args) < 2 {
+		cmdName = "list"
+	} else {
+		cmdName = os.Args[1]
+	}
+
 	if len(os.Args) > 2 {
 		dskName = os.Args[2]
 	}
+
 	if len(os.Args) > 3 {
 		opts = map[string]string{}
 		for _, a := range os.Args[3:] {
@@ -38,7 +58,7 @@ func main() {
 			opts[k] = v
 		}
 	}
-	vmdkops.EsxPort = 1019
+
 	cmd := vmdkops.EsxVmdkCmd{Mtx: &sync.Mutex{}}
 	out, err := cmd.Run(cmdName, dskName, opts)
 	if err != nil {
