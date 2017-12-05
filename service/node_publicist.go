@@ -143,6 +143,18 @@ func (i *nodeVolumePublicist) publish(
 		}
 		fsType = accessType.Mount.FsType
 		mntFlags = accessType.Mount.MountFlags
+		if readOnly {
+			hasROMntFlag := false
+			for _, o := range mntFlags {
+				if o == "ro" {
+					hasROMntFlag = true
+					break
+				}
+			}
+			if !hasROMntFlag {
+				mntFlags = append(mntFlags, "ro")
+			}
+		}
 		lf["accessType"] = "mount"
 		lf["fsType"] = fsType
 		lf["mntFlags"] = mntFlags
@@ -253,6 +265,7 @@ func (i *nodeVolumePublicist) publish(
 			}
 			log.WithFields(lf).Debug(
 				"formatting device & mounting to private mount target")
+
 			if f := i.p.FormatAndMount(); f != nil {
 				err := f(
 					ctx, devicePath, privMntTgtPath, fsType,

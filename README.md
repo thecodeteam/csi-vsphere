@@ -79,10 +79,16 @@ which CSI-vSphere provides a default value:
 The CSI-vSphere SP supports the following CSI volume
 [access modes](https://github.com/container-storage-interface/spec/blob/master/spec.md#createvolume):
 
-| Access Mode | Description |
-|-------------|-------------|
-| `SINGLE_NODE_WRITER` | Can only be published once as read/write on a single node, at any given time. |
-| `SINGLE_NODE_READER_ONLY` | Can only be published once as readonly on a single node, at any given time. |
+| Access Mode | Supported | Description |
+|-------------|:----------:|-------------|
+| `SINGLE_NODE_WRITER` | ✓ | Can only be published once as read/write on a single node, at any given time. |
+| `SINGLE_NODE_READER_ONLY` | ✓ | Can only be published once as readonly on a single node, at any given time. |
+| `MULTI_NODE_READER_ONLY` | | Can be published as readonly at multiple nodes simultaneously |
+| `MULTI_NODE_SINGLE_WRITER` | | Can be published at multiple nodes simultaneously. Only one of the node can be used as read/write. The rest will be readonly |
+| `MULTI_NODE_MULTI_WRITER` | | Can be published as read/write at multiple nodes simultaneously |
+
+While the SP does not support any of the `MULTI_NODE` access modes, the SP **will**
+allow a single volume to be mounted at multiple target paths on a single host.
 
 ## Support
 For any questions or concerns please file an issue with the
