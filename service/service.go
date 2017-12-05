@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"sync"
 
+	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 
 	"github.com/container-storage-interface/spec/lib/go/csi"
@@ -72,24 +73,29 @@ func (s *service) BeforeServe(
 
 	s.ops = vmdkops.VmdkOps{Cmd: vmdkops.EsxVmdkCmd{Mtx: &sync.Mutex{}}}
 
-	privMntDir, privMntDirOk := gocsi.LookupEnv(ctx, csp.EnvVarPrivateMountDir)
-	if !privMntDirOk {
+	privMntDir, _ := gocsi.LookupEnv(ctx, csp.EnvVarPrivateMountDir)
+	if privMntDir == "" {
 		var err error
 		if privMntDir, err = filepath.Abs(".csi-vsphere"); err != nil {
 			return err
 		}
-		if err := gofsutil.EvalSymlinks(ctx, &privMntDir); err != nil {
-			return err
-		}
-		if !filepath.IsAbs(privMntDir) {
-			return fmt.Errorf(
-				"private mount dir must be absolute: %s", privMntDir)
-		}
+	}
+	if !filepath.IsAbs(privMntDir) {
+		return fmt.Errorf(
+			"private mount dir must be absolute: %s", privMntDir)
 	}
 	if err := os.MkdirAll(privMntDir, 0755); err != nil {
 		return err
 	}
+	if err := gofsutil.EvalSymlinks(ctx, &privMntDir); err != nil {
+		return err
+	}
 	s.privMntDir = privMntDir
+
+	log.WithFields(log.Fields{
+		"privateMountDir": s.privMntDir,
+		"esxPort":         vmdkops.EsxPort,
+	}).Infof("configured %s", Name)
 
 	sp.Interceptors = append(
 		sp.Interceptors, NewNodeVolumePublicist(s, privMntDir))
