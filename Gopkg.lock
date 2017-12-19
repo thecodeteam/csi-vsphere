@@ -34,8 +34,8 @@
 [[projects]]
   name = "github.com/thecodeteam/gofsutil"
   packages = ["."]
-  revision = "c8c8c91566a91a907494e33a631b1b95c4aa0f19"
-  version = "v0.1.0"
+  revision = "56ae374ef75adf5ca8ea6b4b79d97175cb86deb2"
+  version = "v0.1.2"
 
 [[projects]]
   branch = "master"
