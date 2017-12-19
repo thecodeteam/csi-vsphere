@@ -43,7 +43,7 @@ func (s *service) IsControllerPublished(
 		return nil, err
 	}
 	if devicePath == "" {
-		return nil, err
+		return nil, nil
 	}
 	return map[string]string{"device": devicePath}, nil
 }
@@ -53,6 +53,14 @@ func (s *service) IsNodePublished(
 	id string,
 	pubInfo map[string]string,
 	targetPath string) (bool, error) {
+
+	devicePath, err := s.getDevicePathByVolumeID(ctx, id)
+	if err != nil {
+		return false, err
+	}
+	if devicePath == "" {
+		return false, nil
+	}
 
 	privMntTgtPath := path.Join(s.privMntDir, hash(id))
 	mountTable, err := gofsutil.GetMounts(ctx)

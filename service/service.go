@@ -6,7 +6,6 @@ import (
 	"net"
 	"os"
 	"path/filepath"
-	"regexp"
 	"strconv"
 	"sync"
 
@@ -97,86 +96,5 @@ func (s *service) BeforeServe(
 		"esxPort":         vmdkops.EsxPort,
 	}).Infof("configured %s", Name)
 
-	sp.Interceptors = append(
-		sp.Interceptors, NewNodeVolumePublicist(s, privMntDir))
 	return nil
-}
-
-func (s *service) toVolumeInfo(id string) (csi.VolumeInfo, error) {
-
-	var vol csi.VolumeInfo
-
-	data, err := s.ops.Get(id)
-	if err != nil {
-		return vol, err
-	}
-
-	vol.Id = id
-	vol.Attributes = map[string]string{}
-
-	for k, v := range data {
-		if k == "capacity" {
-			if v, ok := v.(map[string]interface{}); ok {
-				if v, ok := v["size"].(string); ok {
-					if i, ok := isGB(v); ok {
-						vol.CapacityBytes = i * 1024 * 1024 * 1024
-					} else if i, ok := isMB(v); ok {
-						vol.CapacityBytes = i * 1024 * 1024
-					} else if i, ok := isKB(v); ok {
-						vol.CapacityBytes = i * 1024
-					}
-				}
-			}
-		} else if k == "attachedVMDevice" {
-			if v, ok := v.(map[string]interface{}); ok {
-				for k, v := range v {
-					if v, ok := v.(string); ok && v != "" {
-						vol.Attributes[k] = v
-					}
-				}
-			}
-		} else if v, ok := v.(string); ok {
-			vol.Attributes[k] = v
-		}
-	}
-
-	if len(vol.Attributes) == 0 {
-		vol.Attributes = nil
-	}
-
-	return vol, nil
-}
-
-func isKB(s string) (uint64, bool) {
-	return isSize(`(?i)^([\d,\.]+)\s*KB\s*$`, s)
-}
-
-func isMB(s string) (uint64, bool) {
-	return isSize(`(?i)^([\d,\.]+)\s*MB\s*$`, s)
-}
-
-func isGB(s string) (uint64, bool) {
-	return isSize(`(?i)^([\d,\.]+)\s*GB\s*$`, s)
-}
-
-func isSize(patt, s string) (uint64, bool) {
-	rx := regexp.MustCompile(patt)
-	m := rx.FindStringSubmatch(s)
-	if len(m) == 0 {
-		return 0, false
-	}
-	i, err := strconv.Atoi(m[1])
-	if err != nil {
-		return 0, false
-	}
-	return uint64(i), true
-}
-
-func isSingleMode(cap *csi.VolumeCapability) (bool, bool) {
-	if cap == nil || cap.AccessMode == nil {
-		return false, false
-	}
-	mode := cap.AccessMode.Mode
-	return true, mode == csi.VolumeCapability_AccessMode_SINGLE_NODE_WRITER ||
-		mode == csi.VolumeCapability_AccessMode_SINGLE_NODE_READER_ONLY
 }
